@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple
+    android:color="?attr/colorPrimaryVariant"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/mask"
+        android:drawable="@android:drawable/button_onoff_indicator_off" />
+</ripple>
