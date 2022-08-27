@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="Theme.HistoryQuiz">
-        <item name="android:background">?attr/backgroundColor</item>
-        <item name="android:foreground">@drawable/selectable_item_background</item>
+    <style name="Widget.HistoryQuiz" parent="Theme.HistoryQuiz" />
+
+    <style name="Widget.HistoryQuiz.Button" parent="Widget.MaterialComponents.Button">
+        <item name="rippleColor">@color/btn_ripple_color</item>
     </style>
 
     <style name="TextAppearance.HistoryQuiz.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
         <item name="fontFamily">@font/merriweather</item>
         <item name="android:fontFamily">@font/merriweather</item>
         <item name="android:textSize">42sp</item>
+        <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
     <style name="TextAppearance.HistoryQuiz.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="fontFamily">@font/merriweather</item>
         <item name="android:fontFamily">@font/merriweather</item>
         <item name="android:textSize">24sp</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
 </resources>
