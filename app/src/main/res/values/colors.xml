@@ -7,6 +7,7 @@
     <color name="gray">#FF808080</color>
     <color name="light_slate_gray">#FF778899</color>
     <color name="slate_gray">#FF708090</color>
-    <color name="dark_gray">#353535</color>
-    <color name="orange">#FF5722</color>
+    <color name="dark_gray">#FF353535</color>
+    <color name="orange">#FFFF5722</color>
+    <color name="transparent">#00000000</color>
 </resources>
