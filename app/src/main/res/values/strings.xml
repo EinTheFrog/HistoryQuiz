@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">HistoryQuiz</string>
     <string name="start">Start</string>
+    <string name="task_choose_correct">Choose the correct answer</string>
 </resources>

@@ -21,6 +21,7 @@
         <item name="android:colorBackground">?attr/backgroundColor</item>
         
         <item name="textAppearanceHeadline1">@style/TextAppearance.HistoryQuiz.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.HistoryQuiz.Headline2</item>
         <item name="textAppearanceBody1">@style/TextAppearance.HistoryQuiz.Body1</item>
     </style>
 </resources>
