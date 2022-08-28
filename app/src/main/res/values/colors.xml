@@ -9,5 +9,6 @@
     <color name="slate_gray">#FF708090</color>
     <color name="dark_gray">#FF353535</color>
     <color name="orange">#FFFF5722</color>
+    <color name="blue">#3F51B5</color>
     <color name="transparent">#00000000</color>
 </resources>

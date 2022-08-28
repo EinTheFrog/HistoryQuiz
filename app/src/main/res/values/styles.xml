@@ -15,13 +15,13 @@
     <style name="TextAppearance.HistoryQuiz.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
         <item name="fontFamily">@font/merriweather</item>
         <item name="android:fontFamily">@font/merriweather</item>
-        <item name="android:textSize">36sp</item>
+        <item name="android:textSize">32sp</item>
         <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
     <style name="TextAppearance.HistoryQuiz.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="fontFamily">@font/merriweather</item>
         <item name="android:fontFamily">@font/merriweather</item>
-        <item name="android:textSize">24sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
 </resources>
