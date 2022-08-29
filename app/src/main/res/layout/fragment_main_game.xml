@@ -17,6 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/quiz_card_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="@dimen/quiz_card_margin"
