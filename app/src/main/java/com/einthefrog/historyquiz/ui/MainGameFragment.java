@@ -18,17 +18,21 @@ public class MainGameFragment extends Fragment {
     private static final float cardSensitivity = 0.05f;
     private static final float cardPivotIndent = 500f;
     private static final int cardAnimationDuration = 200;
+    private static final float minCardRotationToChooseAnswer = 5f;
+    private static final float maxCardRotationToChooseAnswer = 30f;
 
     private float startMotionX = 0f;
+    private boolean answerHighlighted = false;
 
-    private ValueAnimator animation;
+    private ValueAnimator rotationAnimation;
     private FragmentMainGameBinding binding;
+    private QuizCardFragment quizCardFragment;
 
     private final View.OnTouchListener quizCardTouchListener = (view, motionEvent) -> {
         CardView quizCardView = (CardView) view;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            if (animation != null) {
-                animation.cancel();
+            if (rotationAnimation != null) {
+                rotationAnimation.cancel();
             }
             startMotionX = motionEvent.getX();
             quizCardView.performClick();
@@ -59,17 +63,18 @@ public class MainGameFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        setQuizCardPivot(binding.quizCardFragment);
+        quizCardFragment = binding.quizCardFragment.getFragment();
     }
 
     private void animateCardToDefaultPosition() {
-        animation = ValueAnimator.ofFloat(binding.quizCardView.getRotation(), 0f);
-        animation.setDuration(cardAnimationDuration);
-        animation.addUpdateListener(updatedAnimation -> {
+        float defaultRotation = 0f;
+        rotationAnimation = ValueAnimator.ofFloat(binding.quizCardView.getRotation(), defaultRotation);
+        rotationAnimation.setDuration(cardAnimationDuration);
+        rotationAnimation.addUpdateListener(updatedAnimation -> {
             float animatedValue = (float) updatedAnimation.getAnimatedValue();
             setQuizCardRotation(binding.quizCardView, animatedValue);
         });
-        animation.start();
+        rotationAnimation.start();
     }
 
     private void setQuizCardPivot(View quizCard) {
@@ -83,5 +88,27 @@ public class MainGameFragment extends Fragment {
     private void setQuizCardRotation(CardView quizCard, float rotation) {
         setQuizCardPivot(quizCard);
         quizCard.setRotation(rotation);
+        highlightAnswerIfNecessary(rotation);
+    }
+
+    private void highlightAnswerIfNecessary(float cardRotation) {
+        if (necessaryToHighlightAnswer(cardRotation)) {
+            quizCardFragment.highlightAnswer(defineChosenAnswerPosition(cardRotation));
+            answerHighlighted = true;
+        }
+    }
+
+    private boolean necessaryToHighlightAnswer(float cardRotation) {
+        float absRotation = Math.abs(cardRotation);
+        return !answerHighlighted && absRotation > minCardRotationToChooseAnswer;
+    }
+
+    private QuizCardFragment.Answer defineChosenAnswerPosition(float cardRotation) {
+        if (cardRotation < -minCardRotationToChooseAnswer) {
+            return QuizCardFragment.Answer.LEFT;
+        } else if (cardRotation > minCardRotationToChooseAnswer) {
+            return QuizCardFragment.Answer.RIGHT;
+        }
+        return QuizCardFragment.Answer.NONE;
     }
 }
