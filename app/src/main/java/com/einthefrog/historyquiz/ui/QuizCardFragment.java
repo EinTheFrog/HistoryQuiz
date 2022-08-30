@@ -49,12 +49,28 @@ public class QuizCardFragment extends Fragment {
 
     public void highlightAnswer(Answer answerType) {
         try {
-            TextView answerView = findAnswerView(answerType);
-            @ColorInt int highlightColor = getHighlightColorForAnswer(answerType);
-            playAnswerHighlightAnimation(answerView, highlightColor);
+            setupAndPlayHighlightAnimation(answerType, colorAlphaMin, colorAlphaMax);
         } catch (ViewNotFoundException exception) {
             Log.i(TAG, exception.getMessage());
         }
+    }
+
+    public void cancelAnswerHighlighting(Answer answerType) {
+        try {
+            setupAndPlayHighlightAnimation(answerType, colorAlphaMax, colorAlphaMin);
+        } catch (ViewNotFoundException exception) {
+            Log.i(TAG, exception.getMessage());
+        }
+    }
+
+    private void setupAndPlayHighlightAnimation(
+            Answer answerType,
+            float alphaFrom,
+            float alphaTo
+    ) throws ViewNotFoundException {
+        TextView answerView = findAnswerView(answerType);
+        @ColorInt int highlightColor = getHighlightColorForAnswer(answerType);
+        playBackgroundHighlightAnimation(answerView, highlightColor, alphaFrom, alphaTo);
     }
 
     private TextView findAnswerView(Answer answerType) throws ViewNotFoundException {
@@ -69,16 +85,17 @@ public class QuizCardFragment extends Fragment {
         return answerView;
     }
 
-    private @ColorInt int getHighlightColorForAnswer(Answer answerType) {
-        if (answerType == Answer.LEFT) {
-            return ColorUtil.colorWithAlphaFromResource(R.color.blue, 1f, activity);
-        } else {
-            return ColorUtil.colorWithAlphaFromResource(R.color.orange, 1f, activity);
-        }
+    private @ColorInt int getHighlightColorForAnswer(Answer answer) {
+        return ColorUtil.colorWithAlphaFromResource(answer.getColorResourceId(), 1f, activity);
     }
 
-    private void playAnswerHighlightAnimation(View answerView, @ColorInt int highlightColor) {
-        ValueAnimator animation = ValueAnimator.ofFloat(colorAlphaMin, colorAlphaMax);
+    private void playBackgroundHighlightAnimation(
+            View answerView,
+            @ColorInt int highlightColor,
+            float alphaFrom,
+            float alphaTo
+    ) {
+        ValueAnimator animation = ValueAnimator.ofFloat(alphaFrom, alphaTo);
         animation.addUpdateListener(updatedValue -> {
             float alpha = (float) updatedValue.getAnimatedValue();
             setViewBackgroundColor(answerView, highlightColor, alpha);
@@ -93,7 +110,25 @@ public class QuizCardFragment extends Fragment {
     }
 
     public enum Answer {
-        LEFT, RIGHT, NONE
+        LEFT {
+            @Override
+            public int getColorResourceId() {
+                return R.color.blue;
+            }
+        },
+        RIGHT {
+            @Override
+            public int getColorResourceId() {
+                return R.color.orange;
+            }
+        },
+        NONE {
+            @Override
+            public int getColorResourceId() {
+                return R.color.transparent;
+            }
+        };
+        public abstract int getColorResourceId();
     }
 
     private static class ViewNotFoundException extends Exception {

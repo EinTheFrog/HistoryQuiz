@@ -22,7 +22,7 @@ public class MainGameFragment extends Fragment {
     private static final float maxCardRotationToChooseAnswer = 30f;
 
     private float startMotionX = 0f;
-    private boolean answerHighlighted = false;
+    private QuizCardFragment.Answer highlightedAnswer = QuizCardFragment.Answer.NONE;
 
     private ValueAnimator rotationAnimation;
     private FragmentMainGameBinding binding;
@@ -88,27 +88,43 @@ public class MainGameFragment extends Fragment {
     private void setQuizCardRotation(CardView quizCard, float rotation) {
         setQuizCardPivot(quizCard);
         quizCard.setRotation(rotation);
-        highlightAnswerIfNecessary(rotation);
+        setupAnswersHighlighting(rotation);
+    }
+
+    private void setupAnswersHighlighting(float cardRotation) {
+        cancelAnswerHighlightingIfNecessary(cardRotation);
+        highlightAnswerIfNecessary(cardRotation);
     }
 
     private void highlightAnswerIfNecessary(float cardRotation) {
-        if (necessaryToHighlightAnswer(cardRotation)) {
-            quizCardFragment.highlightAnswer(defineChosenAnswerPosition(cardRotation));
-            answerHighlighted = true;
+        QuizCardFragment.Answer answerToHighlight = answerToHighlight(cardRotation);
+        boolean noAnswerHighlighted = highlightedAnswer == QuizCardFragment.Answer.NONE;
+        boolean canHighlightAnswer = answerToHighlight != QuizCardFragment.Answer.NONE;;
+        boolean necessaryToHighlightAnswer = noAnswerHighlighted  && canHighlightAnswer;
+        if (necessaryToHighlightAnswer) {
+            quizCardFragment.highlightAnswer(answerToHighlight);
+            highlightedAnswer = answerToHighlight;
         }
     }
 
-    private boolean necessaryToHighlightAnswer(float cardRotation) {
-        float absRotation = Math.abs(cardRotation);
-        return !answerHighlighted && absRotation > minCardRotationToChooseAnswer;
+    private void cancelAnswerHighlightingIfNecessary(float cardRotation) {
+        QuizCardFragment.Answer answerToHighlight = answerToHighlight(cardRotation);
+        boolean someAnswerHighlighted = highlightedAnswer != QuizCardFragment.Answer.NONE;
+        boolean noAnswerToHighlight = answerToHighlight == QuizCardFragment.Answer.NONE;;
+        boolean necessaryToCancelAnswerHighlighting = someAnswerHighlighted  && noAnswerToHighlight;
+        if (necessaryToCancelAnswerHighlighting) {
+            quizCardFragment.cancelAnswerHighlighting(highlightedAnswer);
+            highlightedAnswer = QuizCardFragment.Answer.NONE;
+        }
     }
 
-    private QuizCardFragment.Answer defineChosenAnswerPosition(float cardRotation) {
+    private QuizCardFragment.Answer answerToHighlight(float cardRotation) {
         if (cardRotation < -minCardRotationToChooseAnswer) {
             return QuizCardFragment.Answer.LEFT;
         } else if (cardRotation > minCardRotationToChooseAnswer) {
             return QuizCardFragment.Answer.RIGHT;
+        } else {
+            return QuizCardFragment.Answer.NONE;
         }
-        return QuizCardFragment.Answer.NONE;
     }
 }
