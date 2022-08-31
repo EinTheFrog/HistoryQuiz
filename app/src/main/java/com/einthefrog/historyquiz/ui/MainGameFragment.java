@@ -26,13 +26,14 @@ public class MainGameFragment extends Fragment {
     private static final float cardRotationToChooseAnswer = 3f;
     private static final float goneCardRotation = 30f;
 
-    private float startMotionX = 0f;
-    private QuizCardFragment.Answer highlightedAnswer = QuizCardFragment.Answer.NONE;
+    private float quizCardStartMotionX = 0f;
+    private float answerCardStartMotionX = 0f;
 
     private ValueAnimator quizCardToDefaultAnimation;
-    private ValueAnimator quizCardGoneAnimation;
+    private ValueAnimator answerCardToDefaultAnimation;
     private FragmentMainGameBinding binding;
     private QuizCardFragment quizCardFragment;
+    private QuizCardFragment.Answer highlightedAnswer = QuizCardFragment.Answer.NONE;
 
     private final View.OnTouchListener quizCardTouchListener = (view, motionEvent) -> {
         CardView quizCardView = (CardView) view;
@@ -40,20 +41,48 @@ public class MainGameFragment extends Fragment {
             if (quizCardToDefaultAnimation != null) {
                 quizCardToDefaultAnimation.cancel();
             }
-            startMotionX = motionEvent.getX();
+            quizCardStartMotionX = motionEvent.getX();
             quizCardView.performClick();
             return true;
         } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
             float curMotionX = motionEvent.getX();
-            float additionalRotation = horizontalMotionToCardRotation(startMotionX, curMotionX);
-            setQuizCardRotation(quizCardView, quizCardView.getRotation() + additionalRotation);
+            float additionalRotation = horizontalMotionToCardRotation(quizCardStartMotionX, curMotionX);
+            float rotation = quizCardView.getRotation() + additionalRotation;
+            setCardRotation(quizCardView, rotation);
+            setCardAnswersHighlight(rotation);
             return true;
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
             float absRotation = Math.abs(quizCardView.getRotation());
-            if (absRotation > cardRotationToChooseAnswer) {
-                chooseAnswer();
+            if (absRotation < cardRotationToChooseAnswer) {
+                quizCardToDefaultAnimation = animateCardToDefaultPosition(quizCardView);
             } else {
-                quizCardToDefaultAnimation = animateQuizCardToDefaultPosition();
+                chooseAnswer();
+            }
+            return true;
+        }
+        return false;
+    };
+
+    private final View.OnTouchListener answerCardTouchListener = (view, motionEvent) -> {
+        CardView answerCardView = (CardView) view;
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+            if (answerCardToDefaultAnimation != null) {
+                answerCardToDefaultAnimation.cancel();
+            }
+            answerCardStartMotionX = motionEvent.getX();
+            answerCardView.performClick();
+            return true;
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+            float curMotionX = motionEvent.getX();
+            float additionalRotation = horizontalMotionToCardRotation(answerCardStartMotionX, curMotionX);
+            setCardRotation(answerCardView, answerCardView.getRotation() + additionalRotation);
+            return true;
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            float absRotation = Math.abs(answerCardView.getRotation());
+            if (absRotation < cardRotationToChooseAnswer) {
+                quizCardToDefaultAnimation = animateCardToDefaultPosition(answerCardView);
+            } else {
+                nextQuestion();
             }
             return true;
         }
@@ -68,6 +97,7 @@ public class MainGameFragment extends Fragment {
     ) {
         binding = FragmentMainGameBinding.inflate(getLayoutInflater());
         binding.quizCardView.setOnTouchListener(quizCardTouchListener);
+        binding.answerCardView.setOnTouchListener(answerCardTouchListener);
         return binding.getRoot();
     }
 
@@ -78,22 +108,26 @@ public class MainGameFragment extends Fragment {
     }
 
     private void chooseAnswer() {
-        quizCardGoneAnimation = animateQuizCardOutOfScreen();
+        animateCardOutOfScreen(binding.quizCardView);
     }
 
-    private ValueAnimator animateQuizCardToDefaultPosition() {
-        ValueAnimator rotationAnimator = ValueAnimator.ofFloat(binding.quizCardView.getRotation(), defaultCardRotation);
+    private void nextQuestion() {
+        animateCardOutOfScreen(binding.answerCardView);
+    }
+
+    private ValueAnimator animateCardToDefaultPosition(CardView cardView) {
+        ValueAnimator rotationAnimator = ValueAnimator.ofFloat(cardView.getRotation(), defaultCardRotation);
         rotationAnimator.setDuration(cardAnimationDuration);
         rotationAnimator.addUpdateListener(updatedAnimation -> {
             float animatedValue = (float) updatedAnimation.getAnimatedValue();
-            setQuizCardRotation(binding.quizCardView, animatedValue);
+            setCardRotation(cardView, animatedValue);
         });
         rotationAnimator.start();
         return rotationAnimator;
     }
 
-    private ValueAnimator animateQuizCardOutOfScreen() {
-        float fromRotation = binding.quizCardView.getRotation();
+    private ValueAnimator animateCardOutOfScreen(CardView cardView) {
+        float fromRotation = cardView.getRotation();
         float toRotation = goneCardRotation;
         if (fromRotation < 0) {
             toRotation = -goneCardRotation;
@@ -102,7 +136,7 @@ public class MainGameFragment extends Fragment {
         rotationAnimator.setDuration(cardAnimationDuration);
         rotationAnimator.addUpdateListener(updatedAnimation -> {
             float animatedValue = (float) updatedAnimation.getAnimatedValue();
-            setQuizCardRotation(binding.quizCardView, animatedValue);
+            setCardRotation(cardView, animatedValue);
         });
         rotationAnimator.start();
         return rotationAnimator;
@@ -112,15 +146,18 @@ public class MainGameFragment extends Fragment {
         return (moveTo - moveFrom) * cardSensitivity;
     }
 
-    private void setQuizCardRotation(CardView quizCard, float rotation) {
-        setQuizCardPivot(quizCard);
-        quizCard.setRotation(rotation);
+    private void setCardRotation(CardView cardView, float rotation) {
+        setCardPivot(cardView);
+        cardView.setRotation(rotation);
+    }
+
+    private void setCardAnswersHighlight(float rotation) {
         cancelAnswerHighlightingIfNecessary(rotation);
         highlightAnswerIfNecessary(rotation);
     }
 
-    private void setQuizCardPivot(View quizCard) {
-        quizCard.setPivotY(quizCard.getHeight() + cardPivotIndent);
+    private void setCardPivot(View cardView) {
+        cardView.setPivotY(cardView.getHeight() + cardPivotIndent);
     }
 
     private void highlightAnswerIfNecessary(float cardRotation) {
