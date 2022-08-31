@@ -42,6 +42,14 @@ public class QuizCardFragment extends Fragment {
         return binding.getRoot();
     }
 
+    public void resetCard() {
+        @ColorInt int transparent = ColorUtil.colorWithAlphaFromResource(R.color.transparent, 0f, activity);
+        Answer.LEFT.currentAnimationValue = 0f;
+        setViewBackgroundColor(binding.textAnswerLeft, transparent, 0f);
+        Answer.RIGHT.currentAnimationValue = 0f;
+        setViewBackgroundColor(binding.textAnswerRight, transparent, 0f);
+    }
+
     public void highlightAnswer(Answer answerType) {
         try {
             playAnswerHighlightAnimation(answerType, colorAlphaMax);
