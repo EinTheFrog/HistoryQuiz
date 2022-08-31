@@ -1,5 +1,6 @@
 package com.einthefrog.historyquiz.ui;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.res.Resources;
@@ -38,18 +39,12 @@ public class QuizCardFragment extends Fragment {
         assert activity != null;
 
         binding = FragmentQuizCardBinding.inflate(getLayoutInflater());
-        binding.textAnswerLeft.setOnClickListener(view -> {
-            highlightAnswer(Answer.LEFT);
-        });
-        binding.textAnswerRight.setOnClickListener(view -> {
-            highlightAnswer(Answer.RIGHT);
-        });
         return binding.getRoot();
     }
 
     public void highlightAnswer(Answer answerType) {
         try {
-            setupAndPlayHighlightAnimation(answerType, colorAlphaMin, colorAlphaMax);
+            playAnswerHighlightAnimation(answerType, colorAlphaMax);
         } catch (ViewNotFoundException exception) {
             Log.i(TAG, exception.getMessage());
         }
@@ -57,20 +52,27 @@ public class QuizCardFragment extends Fragment {
 
     public void cancelAnswerHighlighting(Answer answerType) {
         try {
-            setupAndPlayHighlightAnimation(answerType, colorAlphaMax, colorAlphaMin);
+            playAnswerHighlightAnimation(answerType, colorAlphaMin);
         } catch (ViewNotFoundException exception) {
             Log.i(TAG, exception.getMessage());
         }
     }
 
-    private void setupAndPlayHighlightAnimation(
-            Answer answerType,
-            float alphaFrom,
-            float alphaTo
-    ) throws ViewNotFoundException {
-        TextView answerView = findAnswerView(answerType);
-        @ColorInt int highlightColor = getHighlightColorForAnswer(answerType);
-        playBackgroundHighlightAnimation(answerView, highlightColor, alphaFrom, alphaTo);
+    private void playAnswerHighlightAnimation(Answer answer, float alphaTo) throws ViewNotFoundException {
+        View answerView = findAnswerView(answer); // throws ViewNotFoundException
+        @ColorInt int highlightColor = getHighlightColorForAnswer(answer);
+        if (answer.animation != null) {
+            answer.animation.cancel();
+        }
+        float alphaFrom = answer.currentAnimationValue;
+        answer.animation = ValueAnimator.ofFloat(alphaFrom, alphaTo);
+        answer.animation.addUpdateListener(updatedValue -> {
+            float alpha = (float) updatedValue.getAnimatedValue();
+            answer.currentAnimationValue = alpha;
+            setViewBackgroundColor(answerView, highlightColor, alpha);
+        });
+        answer.animation.setDuration(animationDuration);
+        answer.animation.start();
     }
 
     private TextView findAnswerView(Answer answerType) throws ViewNotFoundException {
@@ -86,22 +88,7 @@ public class QuizCardFragment extends Fragment {
     }
 
     private @ColorInt int getHighlightColorForAnswer(Answer answer) {
-        return ColorUtil.colorWithAlphaFromResource(answer.getColorResourceId(), 1f, activity);
-    }
-
-    private void playBackgroundHighlightAnimation(
-            View answerView,
-            @ColorInt int highlightColor,
-            float alphaFrom,
-            float alphaTo
-    ) {
-        ValueAnimator animation = ValueAnimator.ofFloat(alphaFrom, alphaTo);
-        animation.addUpdateListener(updatedValue -> {
-            float alpha = (float) updatedValue.getAnimatedValue();
-            setViewBackgroundColor(answerView, highlightColor, alpha);
-        });
-        animation.setDuration(animationDuration);
-        animation.start();
+        return ColorUtil.colorWithAlphaFromResource(answer.colorResourceId, 1f, activity);
     }
 
     private void setViewBackgroundColor(View view, @ColorInt int color, float alpha) {
@@ -109,31 +96,23 @@ public class QuizCardFragment extends Fragment {
         view.setBackgroundColor(newColor);
     }
 
-    public enum Answer {
-        LEFT {
-            @Override
-            public int getColorResourceId() {
-                return R.color.blue;
-            }
-        },
-        RIGHT {
-            @Override
-            public int getColorResourceId() {
-                return R.color.orange;
-            }
-        },
-        NONE {
-            @Override
-            public int getColorResourceId() {
-                return R.color.transparent;
-            }
-        };
-        public abstract int getColorResourceId();
-    }
-
     private static class ViewNotFoundException extends Exception {
         public ViewNotFoundException(String exceptionMessage) {
             super(exceptionMessage);
+        }
+    }
+
+    public enum Answer {
+        LEFT(R.color.blue),
+        RIGHT(R.color.orange),
+        NONE(R.color.transparent);
+
+        public final int colorResourceId;
+        public float currentAnimationValue = colorAlphaMin;
+        public ValueAnimator animation;
+
+        Answer(int colorResourceId) {
+            this.colorResourceId = colorResourceId;
         }
     }
 }
