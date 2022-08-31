@@ -1,5 +1,7 @@
 package com.einthefrog.historyquiz.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.graphics.drawable.VectorDrawable;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationSet;
 
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
@@ -15,24 +18,27 @@ import androidx.fragment.app.Fragment;
 import com.einthefrog.historyquiz.databinding.FragmentMainGameBinding;
 
 public class MainGameFragment extends Fragment {
-    private static final float cardSensitivity = 0.05f;
-    private static final float cardPivotIndent = 500f;
+    private static final float cardSensitivity = 0.005f;
+    private static final float cardPivotIndent = 5000f;
     private static final int cardAnimationDuration = 200;
-    private static final float minCardRotationToChooseAnswer = 5f;
-    private static final float maxCardRotationToChooseAnswer = 30f;
+    private static final float defaultCardRotation = 0f;
+    private static final float cardRotationToHighlightAnswer = 0.5f;
+    private static final float cardRotationToChooseAnswer = 3f;
+    private static final float goneCardRotation = 30f;
 
     private float startMotionX = 0f;
     private QuizCardFragment.Answer highlightedAnswer = QuizCardFragment.Answer.NONE;
 
-    private ValueAnimator rotationAnimation;
+    private ValueAnimator quizCardToDefaultAnimation;
+    private ValueAnimator quizCardGoneAnimation;
     private FragmentMainGameBinding binding;
     private QuizCardFragment quizCardFragment;
 
     private final View.OnTouchListener quizCardTouchListener = (view, motionEvent) -> {
         CardView quizCardView = (CardView) view;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            if (rotationAnimation != null) {
-                rotationAnimation.cancel();
+            if (quizCardToDefaultAnimation != null) {
+                quizCardToDefaultAnimation.cancel();
             }
             startMotionX = motionEvent.getX();
             quizCardView.performClick();
@@ -43,7 +49,12 @@ public class MainGameFragment extends Fragment {
             setQuizCardRotation(quizCardView, quizCardView.getRotation() + additionalRotation);
             return true;
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            animateCardToDefaultPosition();
+            float absRotation = Math.abs(quizCardView.getRotation());
+            if (absRotation > cardRotationToChooseAnswer) {
+                chooseAnswer();
+            } else {
+                quizCardToDefaultAnimation = animateQuizCardToDefaultPosition();
+            }
             return true;
         }
         return false;
@@ -66,19 +77,35 @@ public class MainGameFragment extends Fragment {
         quizCardFragment = binding.quizCardFragment.getFragment();
     }
 
-    private void animateCardToDefaultPosition() {
-        float defaultRotation = 0f;
-        rotationAnimation = ValueAnimator.ofFloat(binding.quizCardView.getRotation(), defaultRotation);
-        rotationAnimation.setDuration(cardAnimationDuration);
-        rotationAnimation.addUpdateListener(updatedAnimation -> {
+    private void chooseAnswer() {
+        quizCardGoneAnimation = animateQuizCardOutOfScreen();
+    }
+
+    private ValueAnimator animateQuizCardToDefaultPosition() {
+        ValueAnimator rotationAnimator = ValueAnimator.ofFloat(binding.quizCardView.getRotation(), defaultCardRotation);
+        rotationAnimator.setDuration(cardAnimationDuration);
+        rotationAnimator.addUpdateListener(updatedAnimation -> {
             float animatedValue = (float) updatedAnimation.getAnimatedValue();
             setQuizCardRotation(binding.quizCardView, animatedValue);
         });
-        rotationAnimation.start();
+        rotationAnimator.start();
+        return rotationAnimator;
     }
 
-    private void setQuizCardPivot(View quizCard) {
-        quizCard.setPivotY(quizCard.getHeight() + cardPivotIndent);
+    private ValueAnimator animateQuizCardOutOfScreen() {
+        float fromRotation = binding.quizCardView.getRotation();
+        float toRotation = goneCardRotation;
+        if (fromRotation < 0) {
+            toRotation = -goneCardRotation;
+        }
+        ValueAnimator rotationAnimator = ValueAnimator.ofFloat(fromRotation, toRotation);
+        rotationAnimator.setDuration(cardAnimationDuration);
+        rotationAnimator.addUpdateListener(updatedAnimation -> {
+            float animatedValue = (float) updatedAnimation.getAnimatedValue();
+            setQuizCardRotation(binding.quizCardView, animatedValue);
+        });
+        rotationAnimator.start();
+        return rotationAnimator;
     }
 
     private float horizontalMotionToCardRotation(float moveFrom, float moveTo) {
@@ -88,12 +115,12 @@ public class MainGameFragment extends Fragment {
     private void setQuizCardRotation(CardView quizCard, float rotation) {
         setQuizCardPivot(quizCard);
         quizCard.setRotation(rotation);
-        setupAnswersHighlighting(rotation);
+        cancelAnswerHighlightingIfNecessary(rotation);
+        highlightAnswerIfNecessary(rotation);
     }
 
-    private void setupAnswersHighlighting(float cardRotation) {
-        cancelAnswerHighlightingIfNecessary(cardRotation);
-        highlightAnswerIfNecessary(cardRotation);
+    private void setQuizCardPivot(View quizCard) {
+        quizCard.setPivotY(quizCard.getHeight() + cardPivotIndent);
     }
 
     private void highlightAnswerIfNecessary(float cardRotation) {
@@ -119,9 +146,9 @@ public class MainGameFragment extends Fragment {
     }
 
     private QuizCardFragment.Answer answerToHighlight(float cardRotation) {
-        if (cardRotation < -minCardRotationToChooseAnswer) {
+        if (cardRotation < -cardRotationToHighlightAnswer) {
             return QuizCardFragment.Answer.LEFT;
-        } else if (cardRotation > minCardRotationToChooseAnswer) {
+        } else if (cardRotation > cardRotationToHighlightAnswer) {
             return QuizCardFragment.Answer.RIGHT;
         } else {
             return QuizCardFragment.Answer.NONE;
