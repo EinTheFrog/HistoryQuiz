@@ -1,10 +1,7 @@
 package com.einthefrog.historyquiz.ui;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
-import androidx.core.content.ContextCompat;
+import androidx.core.util.Consumer;
 import androidx.fragment.app.Fragment;
 
 import com.einthefrog.historyquiz.R;
@@ -28,6 +25,7 @@ public class QuizCardFragment extends Fragment {
 
     private FragmentQuizCardBinding binding;
     private Activity activity;
+    private Consumer<Answer> onAnswerClick;
 
     @Override
     public View onCreateView(
@@ -39,11 +37,27 @@ public class QuizCardFragment extends Fragment {
         assert activity != null;
 
         binding = FragmentQuizCardBinding.inflate(getLayoutInflater());
+        binding.textAnswerLeft.setOnClickListener(view -> {
+            highlightAnswer(Answer.LEFT);
+            if (onAnswerClick != null) {
+                onAnswerClick.accept(Answer.LEFT);
+            }
+        });
+        binding.textAnswerRight.setOnClickListener(view -> {
+            highlightAnswer(Answer.RIGHT);
+            if (onAnswerClick != null) {
+                onAnswerClick.accept(Answer.RIGHT);
+            }
+        });
         return binding.getRoot();
     }
 
+    public void setOnAnswerClick(Consumer<Answer> onAnswerClick) {
+        this.onAnswerClick = onAnswerClick;
+    }
+
     public void resetCard() {
-        @ColorInt int transparent = ColorUtil.colorWithAlphaFromResource(R.color.transparent, 0f, activity);
+        @ColorInt int transparent = ColorUtil.colorFromResource(activity, R.color.transparent);
         Answer.LEFT.currentAnimationValue = 0f;
         setViewBackgroundColor(binding.textAnswerLeft, transparent, 0f);
         Answer.RIGHT.currentAnimationValue = 0f;
@@ -96,7 +110,7 @@ public class QuizCardFragment extends Fragment {
     }
 
     private @ColorInt int getHighlightColorForAnswer(Answer answer) {
-        return ColorUtil.colorWithAlphaFromResource(answer.colorResourceId, 1f, activity);
+        return ColorUtil.colorFromResource(activity, answer.colorResourceId);
     }
 
     private void setViewBackgroundColor(View view, @ColorInt int color, float alpha) {

@@ -11,6 +11,8 @@ import com.einthefrog.historyquiz.databinding.FragmentAnswerCardBinding;
 
 public class AnswerCardFragment extends Fragment {
 
+    private Runnable onOkClick;
+
     @Override
     public View onCreateView(
             LayoutInflater inflater,
@@ -18,6 +20,15 @@ public class AnswerCardFragment extends Fragment {
             Bundle savedInstanceState
     ) {
         FragmentAnswerCardBinding binding = FragmentAnswerCardBinding.inflate(getLayoutInflater());
+        binding.textOk.setOnClickListener(view -> {
+            if (onOkClick != null) {
+                onOkClick.run();
+            }
+        });
         return binding.getRoot();
+    }
+
+    public void setOnOkClick(Runnable onOkClick) {
+        this.onOkClick = onOkClick;
     }
 }

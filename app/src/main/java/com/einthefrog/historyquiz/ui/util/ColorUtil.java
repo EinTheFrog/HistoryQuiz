@@ -8,9 +8,15 @@ import androidx.core.content.ContextCompat;
 
 public class ColorUtil {
     @ColorInt
-    public static int colorWithAlphaFromResource(int resource, float alpha, Context context) {
-        @ColorInt int color = ContextCompat.getColor(context, resource);
+    public static int colorWithAlphaFromResource(Context context, int resource, float alpha) {
+        @ColorInt int color = colorFromResource(context, resource);
         return colorWithAlpha(color, alpha);
+    }
+
+    @ColorInt
+    public static int colorFromResource(Context context, int resource) {
+        @ColorInt int color = ContextCompat.getColor(context, resource);
+        return color;
     }
 
     @ColorInt
