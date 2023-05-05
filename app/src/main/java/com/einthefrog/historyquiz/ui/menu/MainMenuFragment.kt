@@ -1,4 +1,4 @@
-package com.einthefrog.historyquiz.ui
+package com.einthefrog.historyquiz.ui.menu
 
 import android.app.Activity
 import android.os.Bundle

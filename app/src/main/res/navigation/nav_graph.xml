@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainMenuFragment"
-        android:name="com.einthefrog.historyquiz.ui.MainMenuFragment">
+        android:name="com.einthefrog.historyquiz.ui.menu.MainMenuFragment">
         <action
             android:id="@+id/action_mainMenuFragment_to_mainGameFragment"
             app:destination="@id/mainGameFragment" />
@@ -15,7 +15,7 @@
 
     <fragment
         android:id="@+id/mainGameFragment"
-        android:name="com.einthefrog.historyquiz.ui.MainGameFragment">
+        android:name="com.einthefrog.historyquiz.ui.game.MainGameFragment">
         <action
             android:id="@+id/action_mainGameFragment_to_mainMenuFragment"
             app:popUpTo="@id/mainMenuFragment" />

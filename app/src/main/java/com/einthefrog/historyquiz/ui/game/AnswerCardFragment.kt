@@ -1,4 +1,4 @@
-package com.einthefrog.historyquiz.ui
+package com.einthefrog.historyquiz.ui.game
 
 import android.os.Bundle
 import android.view.LayoutInflater

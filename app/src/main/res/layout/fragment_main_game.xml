@@ -28,7 +28,7 @@
         app:layout_constraintBottom_toBottomOf="parent">
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/quiz_card_fragment"
-            android:name="com.einthefrog.historyquiz.ui.QuizCardFragment"
+            android:name="com.einthefrog.historyquiz.ui.game.QuizCardFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </androidx.cardview.widget.CardView>
@@ -45,7 +45,7 @@
         app:layout_constraintBottom_toBottomOf="parent">
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/answer_card_fragment"
-            android:name="com.einthefrog.historyquiz.ui.AnswerCardFragment"
+            android:name="com.einthefrog.historyquiz.ui.game.AnswerCardFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </androidx.cardview.widget.CardView>

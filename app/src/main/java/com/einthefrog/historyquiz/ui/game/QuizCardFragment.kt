@@ -1,4 +1,4 @@
-package com.einthefrog.historyquiz.ui
+package com.einthefrog.historyquiz.ui.game
 
 import android.animation.ValueAnimator
 import android.app.Activity

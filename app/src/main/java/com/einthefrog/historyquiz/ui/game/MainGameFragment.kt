@@ -1,4 +1,4 @@
-package com.einthefrog.historyquiz.ui
+package com.einthefrog.historyquiz.ui.game
 
 import android.animation.ValueAnimator
 import android.os.Bundle
@@ -10,7 +10,7 @@ import android.view.ViewGroup
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import com.einthefrog.historyquiz.databinding.FragmentMainGameBinding
-import com.einthefrog.historyquiz.ui.QuizCardFragment.Answer
+import com.einthefrog.historyquiz.ui.game.QuizCardFragment.Answer
 import kotlin.math.abs
 
 class MainGameFragment : Fragment() {
